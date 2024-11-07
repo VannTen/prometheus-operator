@@ -3594,6 +3594,20 @@ Kubernetes meta/v1.LabelSelector
 </tr>
 <tr>
 <td>
+<code>roleSelector</code><br/>
+<em>
+<a href="#monitoring.coreos.com/v1.RoleSelector">
+[]RoleSelector
+</a>
+</em>
+</td>
+<td>
+<p>Role selector to select the Kubernetes <code>Endpoints</code> objects to scrape metrics from.
+If <code>roleSelector</code> is defined, the <code>selector</code> field is ignored.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>namespaceSelector</code><br/>
 <em>
 <a href="#monitoring.coreos.com/v1.NamespaceSelector">
@@ -14477,6 +14491,137 @@ bool
 </tr>
 </tbody>
 </table>
+<h3 id="monitoring.coreos.com/v1.RoleSelector">RoleSelector
+</h3>
+<p>
+(<em>Appears on:</em><a href="#monitoring.coreos.com/v1.ServiceMonitorSpec">ServiceMonitorSpec</a>)
+</p>
+<div>
+<p>RoleSelector is a selector for Kubernetes resources.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>role</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Role specifies the role used to filter resources based on their roles.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>labels</code><br/>
+<em>
+<a href="#monitoring.coreos.com/v1.RoleSelectorRequirement">
+[]RoleSelectorRequirement
+</a>
+</em>
+</td>
+<td>
+<p>Labels specifies the label used to filter resources based on their labels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>fields</code><br/>
+<em>
+<a href="#monitoring.coreos.com/v1.RoleSelectorRequirement">
+[]RoleSelectorRequirement
+</a>
+</em>
+</td>
+<td>
+<p>Fields specifies the field used to filter resources based on their fields.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="monitoring.coreos.com/v1.RoleSelectorOperator">RoleSelectorOperator
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#monitoring.coreos.com/v1.RoleSelectorRequirement">RoleSelectorRequirement</a>)
+</p>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;In&#34;</p></td>
+<td><p>RoleSelectorOpIn represents the &ldquo;In&rdquo; operator.</p>
+</td>
+</tr><tr><td><p>&#34;NotIn&#34;</p></td>
+<td><p>RoleSelectorOpNotIn represents the &ldquo;NotIn&rdquo; operator.</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="monitoring.coreos.com/v1.RoleSelectorRequirement">RoleSelectorRequirement
+</h3>
+<p>
+(<em>Appears on:</em><a href="#monitoring.coreos.com/v1.RoleSelector">RoleSelector</a>)
+</p>
+<div>
+<p>RoleSelectorRequirement defines a requirement for selecting roles based on certain criteria.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>key</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Key is the label key that the selector applies to.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>operator</code><br/>
+<em>
+<a href="#monitoring.coreos.com/v1.RoleSelectorOperator">
+RoleSelectorOperator
+</a>
+</em>
+</td>
+<td>
+<p>Operator represents a key&rsquo;s relationship to a set of values.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>values</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>Values is an array of string values. If the operator is In or NotIn, the values array must be non-empty.
+If the operator is Exists or DoesNotExist, the values array must be empty.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="monitoring.coreos.com/v1.Rule">Rule
 </h3>
 <p>
@@ -15252,6 +15397,20 @@ Kubernetes meta/v1.LabelSelector
 </td>
 <td>
 <p>Label selector to select the Kubernetes <code>Endpoints</code> objects to scrape metrics from.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>roleSelector</code><br/>
+<em>
+<a href="#monitoring.coreos.com/v1.RoleSelector">
+[]RoleSelector
+</a>
+</em>
+</td>
+<td>
+<p>Role selector to select the Kubernetes <code>Endpoints</code> objects to scrape metrics from.
+If <code>roleSelector</code> is defined, the <code>selector</code> field is ignored.</p>
 </td>
 </tr>
 <tr>

@@ -57128,6 +57128,81 @@ spec:
                 items:
                   type: string
                 type: array
+              roleSelector:
+                description: |-
+                  Role selector to select the Kubernetes `Endpoints` objects to scrape metrics from.
+                  If `roleSelector` is defined, the `selector` field is ignored.
+                items:
+                  description: RoleSelector is a selector for Kubernetes resources.
+                  properties:
+                    fields:
+                      description: Fields specifies the field used to filter resources
+                        based on their fields.
+                      items:
+                        description: RoleSelectorRequirement defines a requirement
+                          for selecting roles based on certain criteria.
+                        properties:
+                          key:
+                            description: Key is the label key that the selector applies
+                              to.
+                            type: string
+                          operator:
+                            description: Operator represents a key's relationship
+                              to a set of values.
+                            enum:
+                            - In
+                            - NotIn
+                            type: string
+                          values:
+                            description: |-
+                              Values is an array of string values. If the operator is In or NotIn, the values array must be non-empty.
+                              If the operator is Exists or DoesNotExist, the values array must be empty.
+                            items:
+                              type: string
+                            minItems: 1
+                            type: array
+                        required:
+                        - key
+                        - operator
+                        type: object
+                      type: array
+                    labels:
+                      description: Labels specifies the label used to filter resources
+                        based on their labels.
+                      items:
+                        description: RoleSelectorRequirement defines a requirement
+                          for selecting roles based on certain criteria.
+                        properties:
+                          key:
+                            description: Key is the label key that the selector applies
+                              to.
+                            type: string
+                          operator:
+                            description: Operator represents a key's relationship
+                              to a set of values.
+                            enum:
+                            - In
+                            - NotIn
+                            type: string
+                          values:
+                            description: |-
+                              Values is an array of string values. If the operator is In or NotIn, the values array must be non-empty.
+                              If the operator is Exists or DoesNotExist, the values array must be empty.
+                            items:
+                              type: string
+                            minItems: 1
+                            type: array
+                        required:
+                        - key
+                        - operator
+                        type: object
+                      type: array
+                    role:
+                      description: Role specifies the role used to filter resources
+                        based on their roles.
+                      type: string
+                  type: object
+                type: array
               sampleLimit:
                 description: |-
                   `sampleLimit` defines a per-scrape limit on the number of scraped samples
@@ -57231,6 +57306,7 @@ spec:
                 type: integer
             required:
             - endpoints
+            - roleSelector
             - selector
             type: object
         required:

@@ -448,7 +448,7 @@ func TestNamespaceSetCorrectly(t *testing.T) {
 			}
 		}
 
-		c := cg.generateK8SSDConfig(tc.ServiceMonitor.Spec.NamespaceSelector, tc.ServiceMonitor.Namespace, nil, assets.NewTestStoreBuilder().ForNamespace(tc.ServiceMonitor.Namespace), kubernetesSDRoleEndpoint, attachMetaConfig)
+		c := cg.generateK8SSDConfig(tc.ServiceMonitor.Spec.NamespaceSelector, tc.ServiceMonitor.Namespace, nil, assets.NewTestStoreBuilder().ForNamespace(tc.ServiceMonitor.Namespace), kubernetesSDRoleEndpoint, attachMetaConfig, nil)
 		s, err := yaml.Marshal(yaml.MapSlice{c})
 		require.NoError(t, err)
 		golden.Assert(t, string(s), tc.Golden)
@@ -489,7 +489,7 @@ func TestNamespaceSetCorrectlyForPodMonitor(t *testing.T) {
 		MinimumVersion: "2.35.0",
 		attachMetadata: pm.Spec.AttachMetadata,
 	}
-	c := cg.generateK8SSDConfig(pm.Spec.NamespaceSelector, pm.Namespace, nil, assets.NewTestStoreBuilder().ForNamespace(pm.Namespace), kubernetesSDRolePod, attachMetadataConfig)
+	c := cg.generateK8SSDConfig(pm.Spec.NamespaceSelector, pm.Namespace, nil, assets.NewTestStoreBuilder().ForNamespace(pm.Namespace), kubernetesSDRolePod, attachMetadataConfig, nil)
 
 	s, err := yaml.Marshal(yaml.MapSlice{c})
 	require.NoError(t, err)
@@ -952,6 +952,7 @@ func TestK8SSDConfigGeneration(t *testing.T) {
 			tc.store.ForNamespace(sm.Namespace),
 			tc.role,
 			attachMetaConfig,
+			nil,
 		)
 		s, err := yaml.Marshal(yaml.MapSlice{c})
 		require.NoError(t, err)
@@ -11707,5 +11708,172 @@ func TestAlertmanagerTLSConfig(t *testing.T) {
 		require.NoError(t, err)
 		golden.Assert(t, string(cfg), tc.golden)
 
+	}
+}
+
+func TestServiceMonitorSelectors(t *testing.T) {
+	for _, tc := range []struct {
+		name           string
+		golden         string
+		serviceMonitor *monitoringv1.ServiceMonitor
+	}{
+		{
+			name:   "ServiceMonitor with Selector",
+			golden: "ServiceMonitorObjectWithSelector.golden",
+			serviceMonitor: &monitoringv1.ServiceMonitor{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "defaultServiceMonitor",
+					Namespace: "default",
+					Labels: map[string]string{
+						"group": "group1",
+					},
+				},
+				Spec: monitoringv1.ServiceMonitorSpec{
+					Selector: metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"group": "group1",
+						},
+					},
+					Endpoints: []monitoringv1.Endpoint{
+						{
+							Port:     "web",
+							Interval: "30s",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:   "ServiceMonitor with Role Selector Using Labels",
+			golden: "ServiceMonitorObjectWithRoleSelectorUsingLabels.golden",
+			serviceMonitor: &monitoringv1.ServiceMonitor{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "defaultServiceMonitor",
+					Namespace: "default",
+					Labels: map[string]string{
+						"group": "group1",
+					},
+				},
+				Spec: monitoringv1.ServiceMonitorSpec{
+					RoleSelector: []monitoringv1.RoleSelector{
+						{
+							Role: "endpoints",
+							Labels: []monitoringv1.RoleSelectorRequirement{
+								{
+									Key:      "group",
+									Operator: "In",
+									Values:   []string{"group1"},
+								},
+							},
+						},
+					},
+					Endpoints: []monitoringv1.Endpoint{
+						{
+							Port:     "web",
+							Interval: "30s",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:   "ServiceMonitor with Role Selector Using Fields",
+			golden: "ServiceMonitorObjectWithRoleSelectorUsingFields.golden",
+			serviceMonitor: &monitoringv1.ServiceMonitor{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "defaultServiceMonitor",
+					Namespace: "default",
+					Labels: map[string]string{
+						"group": "group1",
+					},
+				},
+				Spec: monitoringv1.ServiceMonitorSpec{
+					RoleSelector: []monitoringv1.RoleSelector{
+						{
+							Role: "endpoints",
+							Fields: []monitoringv1.RoleSelectorRequirement{
+								{
+									Key:      "metadata.namespace",
+									Operator: "In",
+									Values:   []string{"default"},
+								},
+								{
+									Key:      "metadata.labels.group",
+									Operator: "In",
+									Values:   []string{"group1"},
+								},
+							},
+						},
+					},
+					Endpoints: []monitoringv1.Endpoint{
+						{
+							Port:     "web",
+							Interval: "30s",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:   "ServiceMonitor with Selector and Role Selector",
+			golden: "ServiceMonitorObjectWithSelectorAndRoleSelector.golden",
+			serviceMonitor: &monitoringv1.ServiceMonitor{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "defaultServiceMonitor",
+					Namespace: "default",
+					Labels: map[string]string{
+						"group": "group1",
+						"app":   "app1",
+					},
+				},
+				Spec: monitoringv1.ServiceMonitorSpec{
+					Selector: metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"group": "group1",
+						},
+					},
+					RoleSelector: []monitoringv1.RoleSelector{
+						{
+							Role: "endpoints",
+							Labels: []monitoringv1.RoleSelectorRequirement{
+								{
+									Key:      "group",
+									Operator: "In",
+									Values:   []string{"group1"},
+								},
+								{
+									Key:      "app",
+									Operator: "In",
+									Values:   []string{"app1"},
+								},
+							},
+						},
+					},
+					Endpoints: []monitoringv1.Endpoint{
+						{
+							Port:     "web",
+							Interval: "30s",
+						},
+					},
+				},
+			},
+		},
+	} {
+		p := defaultPrometheus()
+		cg := mustNewConfigGenerator(t, p)
+		cfg, err := cg.GenerateServerConfiguration(
+			p,
+			map[string]*monitoringv1.ServiceMonitor{"monitor": tc.serviceMonitor},
+			nil,
+			nil,
+			nil,
+			assets.NewTestStoreBuilder(),
+			nil,
+			nil,
+			nil,
+			nil,
+		)
+		require.NoError(t, err)
+		golden.Assert(t, string(cfg), tc.golden)
 	}
 }

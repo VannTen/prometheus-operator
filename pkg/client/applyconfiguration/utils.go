@@ -156,6 +156,10 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &monitoringv1.RemoteReadSpecApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("RemoteWriteSpec"):
 		return &monitoringv1.RemoteWriteSpecApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("RoleSelector"):
+		return &monitoringv1.RoleSelectorApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("RoleSelectorRequirement"):
+		return &monitoringv1.RoleSelectorRequirementApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("Rule"):
 		return &monitoringv1.RuleApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("RuleGroup"):

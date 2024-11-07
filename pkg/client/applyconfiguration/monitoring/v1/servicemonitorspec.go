@@ -30,6 +30,7 @@ type ServiceMonitorSpecApplyConfiguration struct {
 	PodTargetLabels                         []string                                `json:"podTargetLabels,omitempty"`
 	Endpoints                               []EndpointApplyConfiguration            `json:"endpoints,omitempty"`
 	Selector                                *metav1.LabelSelectorApplyConfiguration `json:"selector,omitempty"`
+	RoleSelector                            []RoleSelectorApplyConfiguration        `json:"roleSelector,omitempty"`
 	NamespaceSelector                       *NamespaceSelectorApplyConfiguration    `json:"namespaceSelector,omitempty"`
 	SampleLimit                             *uint64                                 `json:"sampleLimit,omitempty"`
 	ScrapeProtocols                         []monitoringv1.ScrapeProtocol           `json:"scrapeProtocols,omitempty"`
@@ -96,6 +97,19 @@ func (b *ServiceMonitorSpecApplyConfiguration) WithEndpoints(values ...*Endpoint
 // If called multiple times, the Selector field is set to the value of the last call.
 func (b *ServiceMonitorSpecApplyConfiguration) WithSelector(value *metav1.LabelSelectorApplyConfiguration) *ServiceMonitorSpecApplyConfiguration {
 	b.Selector = value
+	return b
+}
+
+// WithRoleSelector adds the given value to the RoleSelector field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the RoleSelector field.
+func (b *ServiceMonitorSpecApplyConfiguration) WithRoleSelector(values ...*RoleSelectorApplyConfiguration) *ServiceMonitorSpecApplyConfiguration {
+	for i := range values {
+		if values[i] == nil {
+			panic("nil value passed to WithRoleSelector")
+		}
+		b.RoleSelector = append(b.RoleSelector, *values[i])
+	}
 	return b
 }
 

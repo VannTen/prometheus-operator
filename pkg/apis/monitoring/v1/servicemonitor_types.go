@@ -15,6 +15,8 @@
 package v1
 
 import (
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -83,6 +85,11 @@ type ServiceMonitorSpec struct {
 
 	// Label selector to select the Kubernetes `Endpoints` objects to scrape metrics from.
 	Selector metav1.LabelSelector `json:"selector"`
+
+	// Role selector to select the Kubernetes `Endpoints` objects to scrape metrics from.
+	// If `roleSelector` is defined, the `selector` field is ignored.
+	RoleSelector []RoleSelector `json:"roleSelector"`
+
 	// `namespaceSelector` defines in which namespace(s) Prometheus should discover the services.
 	// By default, the services are discovered in the same namespace as the `ServiceMonitor` object but it is possible to select pods across different/all namespaces.
 	NamespaceSelector NamespaceSelector `json:"namespaceSelector,omitempty"`
@@ -170,6 +177,71 @@ type ServiceMonitorList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	// List of ServiceMonitors
 	Items []*ServiceMonitor `json:"items"`
+}
+
+// RoleSelector is a selector for Kubernetes resources.
+// +k8s:openapi-gen=true
+type RoleSelector struct {
+
+	// Role specifies the role used to filter resources based on their roles.
+	Role string `json:"role,omitempty"`
+
+	// Labels specifies the label used to filter resources based on their labels.
+	Labels []RoleSelectorRequirement `json:"labels,omitempty"`
+
+	// Fields specifies the field used to filter resources based on their fields.
+	Fields []RoleSelectorRequirement `json:"fields,omitempty"`
+}
+
+func (rs *RoleSelector) LabelsInline() string {
+	var labels []string
+	for _, l := range rs.Labels {
+		for _, v := range l.Values {
+			labels = append(labels, l.Key+roleSelectorOperatorMap[l.Operator]+v)
+		}
+	}
+	return strings.Join(labels, ",")
+}
+
+func (rs *RoleSelector) FieldsInline() string {
+	var fields []string
+	for _, l := range rs.Fields {
+		for _, v := range l.Values {
+			fields = append(fields, l.Key+roleSelectorOperatorMap[l.Operator]+v)
+		}
+	}
+	return strings.Join(fields, ",")
+}
+
+type RoleSelectorOperator string
+
+const (
+	// RoleSelectorOpIn represents the "In" operator.
+	RoleSelectorOpIn RoleSelectorOperator = "In"
+
+	// RoleSelectorOpNotIn represents the "NotIn" operator.
+	RoleSelectorOpNotIn RoleSelectorOperator = "NotIn"
+)
+
+var roleSelectorOperatorMap = map[RoleSelectorOperator]string{
+	RoleSelectorOpIn:    "=",
+	RoleSelectorOpNotIn: "!=",
+}
+
+// RoleSelectorRequirement defines a requirement for selecting roles based on certain criteria.
+// +k8s:openapi-gen=true
+type RoleSelectorRequirement struct {
+	// Key is the label key that the selector applies to.
+	Key string `json:"key"`
+
+	// Operator represents a key's relationship to a set of values.
+	// +kubebuilder:validation:Enum=In;NotIn
+	Operator RoleSelectorOperator `json:"operator"`
+
+	// Values is an array of string values. If the operator is In or NotIn, the values array must be non-empty.
+	// If the operator is Exists or DoesNotExist, the values array must be empty.
+	// +kubebuilder:validation:MinItems=1
+	Values []string `json:"values,omitempty"`
 }
 
 // DeepCopyObject implements the runtime.Object interface.
